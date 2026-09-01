@@ -1,22 +1,29 @@
 import sys
 import os
-from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import (
+
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import (
     QApplication,
-    QHBoxLayout,
+    QCheckBox,
+    QComboBox,
+    QDial,
+    QDoubleSpinBox,
     QLabel,
+    QLineEdit,
+    QListWidget,
     QMainWindow,
+    QSlider,
+    QSpinBox,
     QPushButton,
     QStackedLayout,
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QFileDialog,
 )
 
 from ics import interpret
-
-app = QApplication(sys.argv)
-ex = QWidget()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -38,8 +45,9 @@ class MainWindow(QMainWindow):
         font.setBold(True)
         
         titleWidget.setFont(font)
-        titleWidget.setAlignment(Qt.AlignCenter)
-
+        titleWidget.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter
+        )
         # buttons
         button1 = QPushButton("Upload")
         button1.setStyleSheet("background-color: red")
@@ -62,7 +70,7 @@ class MainWindow(QMainWindow):
     
     def on_click1(self):
         file_path, _ = QFileDialog.getOpenFileName(
-            ex, "Open File", "/", "ICS Files (*.ics)"
+            self, "Open File", "/", "ICS Files (*.ics)"
         )
         if file_path:
             print("Selected file:", file_path)

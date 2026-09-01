@@ -1,7 +1,7 @@
 DateTime==6.0
-PyQt5==5.15.11
-PyQt5-Qt5==5.15.19
-PyQt5_sip==12.19.0
+PyQt6==6.11.0
+PyQt6-Qt6==6.11.2
+PyQt6_sip==13.12.0
 python-dateutil==2.9.0.post0
 pytz==2026.3.post1
 six==1.17.0
