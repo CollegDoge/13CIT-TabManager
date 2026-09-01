@@ -1,8 +1,6 @@
-import sys
-import os
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
+from gui import *
 
-from gui import MainWindow
+import sys
 
 def main():
     app = QApplication(sys.argv)

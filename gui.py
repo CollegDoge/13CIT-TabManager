@@ -1,3 +1,5 @@
+import sys
+import os
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import (
     QApplication,
@@ -8,7 +10,13 @@ from PyQt5.QtWidgets import (
     QStackedLayout,
     QVBoxLayout,
     QWidget,
+    QFileDialog,
 )
+
+from ics import interpret
+
+app = QApplication(sys.argv)
+ex = QWidget()
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -33,12 +41,12 @@ class MainWindow(QMainWindow):
         titleWidget.setAlignment(Qt.AlignCenter)
 
         # buttons
-        button1 = QPushButton("Test Button 1")
+        button1 = QPushButton("Upload")
         button1.setStyleSheet("background-color: red")
         button1.clicked.connect(self.on_click1)
         buttonlayout.addWidget(button1)
 
-        button2 = QPushButton("Test Button 2")
+        button2 = QPushButton("Quit App")
         button2.setStyleSheet("background-color: blue")
         button2.clicked.connect(self.on_click2)
         buttonlayout.addWidget(button2)
@@ -53,9 +61,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(widget)
     
     def on_click1(self):
-        print("Button 1 Clicked!")
-        self.close()
+        file_path, _ = QFileDialog.getOpenFileName(
+            ex, "Open File", "/", "ICS Files (*.ics)"
+        )
+        if file_path:
+            print("Selected file:", file_path)
+            interpret(file_path)
 
     def on_click2(self):
-        print("Button 2 Clicked!")
+        print("App Closed.")
         self.close()

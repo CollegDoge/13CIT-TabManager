@@ -1,0 +1,8 @@
+DateTime==6.0
+PyQt5==5.15.11
+PyQt5-Qt5==5.15.19
+PyQt5_sip==12.19.0
+python-dateutil==2.9.0.post0
+pytz==2026.3.post1
+six==1.17.0
+zope.interface==8.6
