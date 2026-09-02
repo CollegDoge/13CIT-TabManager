@@ -2,80 +2,81 @@ import sys
 import os
 
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
-    QDial,
-    QDoubleSpinBox,
     QLabel,
     QLineEdit,
     QListWidget,
     QMainWindow,
     QSlider,
-    QSpinBox,
     QPushButton,
     QStackedLayout,
     QVBoxLayout,
-    QHBoxLayout,
     QWidget,
     QFileDialog,
+    QTabWidget,
 )
 
-from ics import interpret
+# pages
+from pages.group_page import GroupWindow
+from pages.calendar_page import CalendarWindow
+from pages.settings_page import SettingsWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
         # window defaults
         super().__init__()
         self.setWindowTitle("TabManager")
-        self.setGeometry(100, 100, 600, 900)
-        self.setFixedSize(QSize(600, 900))
+        self.setFixedSize(QSize(400, 500))
 
-        pagelayout = QVBoxLayout()
-        buttonlayout = QHBoxLayout()
+        icon_path = os.path.join(os.path.dirname(__file__), "/assets/icon.png")
+        self.setWindowIcon(QIcon(icon_path))
+
+        buttonlayout = QVBoxLayout()
+        buttonlayout.setSpacing(0)
+
         self.stacklayout = QStackedLayout()
-
-        # title
-        titleWidget = QLabel("TabManager")
-
-        font = titleWidget.font()
-        font.setPointSize(30)
-        font.setBold(True)
         
-        titleWidget.setFont(font)
-        titleWidget.setAlignment(
-            Qt.AlignmentFlag.AlignHCenter
-        )
         # buttons
-        button1 = QPushButton("Upload")
-        button1.setStyleSheet("background-color: red")
-        button1.clicked.connect(self.on_click1)
+        button1 = QPushButton("Add Tab Groups")
+        button1.clicked.connect(self.group_page)
         buttonlayout.addWidget(button1)
 
-        button2 = QPushButton("Quit App")
-        button2.setStyleSheet("background-color: blue")
-        button2.clicked.connect(self.on_click2)
+        button2 = QPushButton("Manage Calendar")
+        button2.clicked.connect(self.calendar_page)
         buttonlayout.addWidget(button2)
 
+        button3 = QPushButton("Open Settings");
+        button3.clicked.connect(self.settings_page)
+        buttonlayout.addWidget(button3)
+
+        button4 = QPushButton("Quit App")
+        button4.clicked.connect(self.quit_app)
+        buttonlayout.addWidget(button4)
+
         # widgets
-        pagelayout.addWidget(titleWidget)
-        pagelayout.addLayout(buttonlayout)
-        pagelayout.addLayout(self.stacklayout)
-
         widget = QWidget()
-        widget.setLayout(pagelayout)
+        widget.setLayout(buttonlayout)
         self.setCentralWidget(widget)
-    
-    def on_click1(self):
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Open File", "/", "ICS Files (*.ics)"
-        )
-        if file_path:
-            print("Selected file:", file_path)
-            interpret(file_path)
 
-    def on_click2(self):
+    def group_page(self):
+        self.group = GroupWindow(self)
+        self.group.show()
+        self.hide()
+        
+    def calendar_page(self):
+        self.calendar = CalendarWindow(self)
+        self.calendar.show()
+        self.hide()
+    
+    def settings_page(self):
+        self.settings = SettingsWindow(self)
+        self.settings.show()
+        self.hide()
+
+    def quit_app(self):
         print("App Closed.")
         self.close()
