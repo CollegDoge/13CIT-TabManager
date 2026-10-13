@@ -23,7 +23,6 @@ from PyQt6.QtWidgets import (
 # pages
 from pages.group_page import GroupWindow
 from pages.calendar_page import CalendarWindow
-from pages.settings_page import SettingsWindow
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -49,13 +48,9 @@ class MainWindow(QMainWindow):
         button2.clicked.connect(self.calendar_page)
         buttonlayout.addWidget(button2)
 
-        button3 = QPushButton("Open Settings");
-        button3.clicked.connect(self.settings_page)
+        button3 = QPushButton("Quit App")
+        button3.clicked.connect(self.quit_app)
         buttonlayout.addWidget(button3)
-
-        button4 = QPushButton("Quit App")
-        button4.clicked.connect(self.quit_app)
-        buttonlayout.addWidget(button4)
 
         # widgets
         widget = QWidget()
@@ -70,11 +65,6 @@ class MainWindow(QMainWindow):
     def calendar_page(self):
         self.calendar = CalendarWindow(self)
         self.calendar.show()
-        self.hide()
-    
-    def settings_page(self):
-        self.settings = SettingsWindow(self)
-        self.settings.show()
         self.hide()
 
     def quit_app(self):
