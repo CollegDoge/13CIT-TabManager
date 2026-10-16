@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
 # pages
 from pages.group_page import GroupWindow
 from pages.calendar_page import CalendarWindow
+from func.group import grouptest
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -50,9 +51,9 @@ class MainWindow(QMainWindow):
         buttonlayout.setContentsMargins(10, 0, 0, 0)
 
         # title
-        title = QLabel("TabManager")
-        title.setFont(QFont("JetBrainsMono Nerd Font", 30))
-        titlelayout.addWidget(title)
+        title_label = QLabel("<b>TabManager</b> - v0.1.0")
+        title_label.setFont(QFont("Inter", 30))
+        titlelayout.addWidget(title_label)
 
         # button
         button1 = QPushButton("Add Tab Groups")
@@ -63,7 +64,7 @@ class MainWindow(QMainWindow):
         button2.clicked.connect(self.calendar_page)
         buttonlayout.addWidget(button2)
 
-        button3 = QPushButton("Test Launch Website")
+        button3 = QPushButton("Test Launch Group")
         button3.clicked.connect(self.test_launch)
         buttonlayout.addWidget(button3)
 
@@ -71,6 +72,11 @@ class MainWindow(QMainWindow):
         button4.clicked.connect(self.quit_app)
         buttonlayout.addWidget(button4)
 
+        button1.setFont(QFont("Inter", 11))
+        button2.setFont(QFont("Inter", 11))
+        button3.setFont(QFont("Inter", 11))
+        button4.setFont(QFont("Inter", 11))
+        
         widget = QWidget()
         widget.setLayout(pagelayout)
         self.setCentralWidget(widget)
@@ -86,8 +92,8 @@ class MainWindow(QMainWindow):
         self.hide()
 
     def test_launch(self):
-        print("Launching Website")
-        os.system("firefox https://www.google.com")
+        print("Launching Group")
+        grouptest()
 
     def quit_app(self):
         print("App Closed.")

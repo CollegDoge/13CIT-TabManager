@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QTabWidget,
 )
 
-from ics import interpret
+from func.ics import interpret
 
 class CalendarWindow(QMainWindow):
     def __init__(self, MainWindow):
