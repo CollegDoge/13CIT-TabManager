@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 import platform
 
 os_name = platform.system()
@@ -15,13 +16,17 @@ else:
     sys.exit(1)
 
 with open(common_path_file, "r") as f:
-    common_paths = f.readlines()
+    # remove empty lines, and only keep lines that exist
+    common_paths = [line.strip() for line in f if line.strip() and os.path.exists(line.strip())]
 
-browser = common_paths[0].strip()
-    
+browser = common_paths[0] if common_paths else None
+
 def grouptest():
     print("Test launching google, github and spotify")
     print("Default browser:", repr(browser))
-    os.system(f'"{browser}" https://www.google.com')
-    os.system(f'"{browser}" https://github.com')
-    os.system(f'"{browser}" https://open.spotify.com')
+    urls = [
+        "https://www.google.com",
+        "https://github.com",
+        "https://open.spotify.com"
+    ]
+    subprocess.Popen([browser] + urls)
