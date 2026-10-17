@@ -3,6 +3,11 @@
 ## Pre compiled binaries
 should be in the releases tab assuming i remembered to do this... who knows
 
+> [!NOTE] 
+> I have used inter across this project, please install the font for correct rendering
+
+https://fonts.google.com/specimen/Inter
+
 ## Linux Setup
 (ensure python/pip is setup correctly prior to running)
 

@@ -1,8 +1,8 @@
 import sys
 import os
 
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtCore import QSize, Qt, pyqtSignal
+from PyQt6.QtGui import QIcon, QFont
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -14,20 +14,23 @@ from PyQt6.QtWidgets import (
     QSlider,
     QPushButton,
     QStackedLayout,
-    QVBoxLayout,
     QHBoxLayout,
+    QVBoxLayout,
     QWidget,
     QFileDialog,
     QTabWidget,
 )
 
 class GroupWindow(QMainWindow):
-    def __init__(self, MainWindow):
+    back_to_main_signal = pyqtSignal()
+
+    def __init__(self):
+        # window defaults
         super().__init__()
-        self.main_window = MainWindow
-        self.setWindowTitle("Add Groups")
-        self.setGeometry(100, 100, 200, 200)
-        self.setFixedSize(QSize(200, 200))
+        self.setWindowTitle("TabManager - Manage Groups")
+        self.setFixedSize(QSize(1000, 700))
+        icon_path = os.path.join(os.path.dirname(__file__), "assets/icon.png")
+        self.setWindowIcon(QIcon(icon_path))
 
         buttonlayout = QVBoxLayout()
 
@@ -43,5 +46,5 @@ class GroupWindow(QMainWindow):
         self.setCentralWidget(widget)
 
     def go_back(self):
+        self.back_to_main_signal.emit()
         self.hide()
-        self.main_window.show()
