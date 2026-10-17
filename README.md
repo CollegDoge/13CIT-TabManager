@@ -50,10 +50,11 @@ python main.py
 # TODO
 - ✅ detect path (platform dependent (e.g /usr/bin/firefox, C:\Program Files (x86)\Google\Chrome\Application\chrome.exe))
 - ✅ get basic tab execution/groups done
+- ✅ allow users to select browser from dropdown
 - tab group creation GUI
 - custom lists n stuff
-- allow users to select browser from dropdown
 - allow users to select profile? from dropdown
+- other toggles (startup, destructive mode, etc)
 
 # LATER
 - calendar LATER - work on tab groups first. ICS stuff hold for now

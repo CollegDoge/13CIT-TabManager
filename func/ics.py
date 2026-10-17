@@ -12,11 +12,12 @@ from datetime import datetime
 from dateutil.parser import parse
 from dateutil.tz import gettz
 
-
 def interpret(file_path):
+    # open file/read lines
     with open(file_path, "r") as f:
         lines = f.readlines()
 
+    # looks for important lines, prints em (temporarily)
     for line in lines:
         if line.startswith("SUMMARY:"):
             summary = line.split(":")[1].strip()

@@ -29,25 +29,34 @@ class CalendarWindow(QMainWindow):
     def __init__(self):
         # window defaults
         super().__init__()
-        self.setWindowTitle("TabManager - Calendar")
+        self.setWindowTitle("TabManager - Manage Groups")
         self.setFixedSize(QSize(1000, 700))
-        icon_path = os.path.join(os.path.dirname(__file__), "assets/icon.png")
+        icon_path = os.path.join(os.path.dirname(__file__), "../assets/icon.png")
         self.setWindowIcon(QIcon(icon_path))
+        
+        # page layouts
+        pagelayout = QVBoxLayout()
+        titlelayout = QHBoxLayout()
+        bottombar = QHBoxLayout()
+        self.stacklayout = QStackedLayout()
 
-        buttonlayout = QVBoxLayout()
+        # page layout config
+        pagelayout.setSpacing(15)
+        pagelayout.addLayout(titlelayout)
+        pagelayout.addLayout(bottombar)
 
-        # buttons
-        icsImportBtn = QPushButton("Import ICS")
-        icsImportBtn.clicked.connect(self.ics_import)
-        buttonlayout.addWidget(icsImportBtn)
+        bottombar.setAlignment(Qt.AlignRight)
+        bottombar.setSpacing(10)
+        bottombar.setContentsMargins(10, 5, 0, 0)
+
+        pagelayout.addLayout(self.stacklayout)
 
         backBtn = QPushButton("Back")
         backBtn.clicked.connect(self.go_back)
-        buttonlayout.addWidget(backBtn)
-
-        # widgets
+        bottombar.addWidget(backBtn)
+    
         widget = QWidget()
-        widget.setLayout(buttonlayout)
+        widget.setLayout(pagelayout)
         self.setCentralWidget(widget)
 
     def ics_import(self):

@@ -33,8 +33,8 @@ def get_browser_display_name(path):
         base = os.path.basename(path)
         return os.path.splitext(base)[0].replace("-", " ").title()
 
+# check for browsers against predefined lists
 def get_available_browsers():
-    """Scans the platform-specific text file and returns a list of (display_name, path) tuples."""
     os_name = platform.system()
     
     if os_name == "Windows":
@@ -46,12 +46,15 @@ def get_available_browsers():
     else:
         return []
 
+    # if a path doesnt exist
     if not os.path.exists(common_path_file):
         return []
 
+    # build a list of (display_name, path) tuples (available browsers)
     available = []
     seen_paths = set()
     
+    # read the file
     with open(common_path_file, "r") as f:
         for line in f:
             raw_path = line.strip().strip('"')
@@ -60,30 +63,41 @@ def get_available_browsers():
                 
             expanded_path = os.path.expandvars(raw_path)
             
+            # check if the path exists and is not already in the list
             if os.path.exists(expanded_path) and expanded_path not in seen_paths:
                 seen_paths.add(expanded_path)
                 display_name = get_browser_display_name(expanded_path)
                 available.append((display_name, expanded_path))
                 
+    # finally, return the list of actually available browsers
     return available
 
-def grouptest(browser_path=None):
-    browsers = get_available_browsers()
-    if not browsers:
-        print("No common browser found")
-        return
+def open_group(group, browser_path=None):
+    # probably useless, but just in case
+    urls = group.get("urls", [])
+    if not urls:
+        print("group has no urls ???")
+        return False
 
-    browser = browser_path if browser_path else browsers[0][1]
-    
-    print("Test launching google, github and spotify")
-    print("Using browser:", repr(browser))
-    
-    urls = [
-        "https://www.google.com",
-        "https://github.com",
-        "https://open.spotify.com"
-    ]
-    subprocess.Popen([browser] + urls)
+    # specified browser
+    browser = browser_path
+
+    # no browser found/specified
+    if not browser:
+        browsers = get_available_browsers()
+        if not browsers:
+            print("No common browser found")
+            return False
+        browser = browsers[0][1]
+
+    # should catch most problems, i didnt have any in testing
+    try:
+        subprocess.Popen([browser] + urls)
+    except OSError as e: 
+        print("something died :( -", e)
+        return False
+    return True
+
 
 if __name__ == "__main__":
     grouptest()

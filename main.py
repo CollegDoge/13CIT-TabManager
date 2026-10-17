@@ -1,9 +1,10 @@
 from gui import *
 
+os.environ['QT_API'] = 'pyqt6'
+
 import sys
 import qdarkstyle
 
-os.environ['QT_API'] = 'pyqt5'
 
 def main():
     app = QApplication(sys.argv)

@@ -19,12 +19,14 @@ from PyQt6.QtWidgets import (
     QWidget,
     QFileDialog,
     QTabWidget,
+    QGridLayout
 )
 
 # pages
 from pages.group_page import GroupWindow
 from pages.calendar_page import CalendarWindow
-from func.group import get_available_browsers, grouptest
+from func.group import get_available_browsers, open_group
+from func import groupstore
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -77,17 +79,9 @@ class MainWindow(QMainWindow):
         titlelayout.addWidget(title_label)
 
         # button
-        testgroup1 = QPushButton("Test Group 1")
-        testgroup1.clicked.connect(self.launch)
-        grouplayout.addWidget(testgroup1)
-
-        testgroup2 = QPushButton("Test Group 2")
-        testgroup2.clicked.connect(self.launch)
-        grouplayout.addWidget(testgroup2)
-
-        testgroup3 = QPushButton("Test Group 3")
-        testgroup3.clicked.connect(self.launch)
-        grouplayout.addWidget(testgroup3)
+        self.quicklayout = QGridLayout()
+        self.quicklayout.setSpacing(10)
+        grouplayout.addLayout(self.quicklayout)
 
         groupadd = QPushButton("Add Tab Groups")
         groupadd.clicked.connect(self.group_page)
@@ -148,14 +142,18 @@ class MainWindow(QMainWindow):
 
         self.calendar_window = None
         self.group_window = None
+        self.refresh_group_buttons()
 
+    # open group page
     def group_page(self):
         if self.group_window is None:
             self.group_window = GroupWindow()
             self.group_window.back_to_main_signal.connect(self.show)
+            self.group_window.groups_changed.connect(self.refresh_group_buttons)
         self.group_window.show()
         self.hide()
         
+    # open calendar page
     def calendar_page(self):
         if self.calendar_window is None:
             self.calendar_window = CalendarWindow()
@@ -163,10 +161,23 @@ class MainWindow(QMainWindow):
         self.calendar_window.show()
         self.hide()
     
-    def launch(self):
-        selected_path = self.opt_browser.currentData()
-        grouptest(selected_path)
+    # refresh the quick launch buttons
+    def refresh_group_buttons(self):
+        while self.quicklayout.count():
+            w = self.quicklayout.takeAt(0).widget()
+            if w:
+                w.setParent(None)
+                w.deleteLater()
+        for i, group in enumerate(groupstore.load_groups()):
+            btn = QPushButton(group["name"])
+            btn.clicked.connect(lambda checked=False, g=group: self.launch_group(g))
+            self.quicklayout.addWidget(btn, i // 5, i % 5)  # max 5 per row
 
+    # launch a tab group
+    def launch_group(self, group):
+        open_group(group, self.opt_browser.currentData())
+
+    # quit the app
     def quit_app(self):
         print("App Closed.")
         self.close()
