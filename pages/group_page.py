@@ -20,6 +20,7 @@ from PyQt6.QtWidgets import (
 
 from func import groupstore
 
+ACC_COLOR = "#213A73"   # nice blue color
 ERROR_COLOR = "#e06c75" # nice red color
 OK_COLOR = "#98c379"    # nice green color 
 
@@ -109,6 +110,8 @@ class GroupWindow(QMainWindow):
         bottombar.setSpacing(10)
         bottombar.setContentsMargins(10, 5, 0, 0)
         backBtn = QPushButton("Back")
+        backBtn.setFixedSize(QSize(80, 30))
+        backBtn.setStyleSheet(f"background-color: {ACC_COLOR};")
         backBtn.clicked.connect(self.go_back)
         bottombar.addWidget(backBtn)
         pagelayout.addLayout(bottombar)
@@ -152,7 +155,7 @@ class GroupWindow(QMainWindow):
         newgrouplayout.addWidget(QLabel("Group name"))
         self.name_input = QLineEdit()
         self.name_input.setPlaceholderText("e.g Stats Work Frfr")
-        self.name_input.setMaxLength(40)
+        self.name_input.setMaxLength(24)
         newgrouplayout.addWidget(self.name_input)
 
         # URLs
@@ -162,6 +165,7 @@ class GroupWindow(QMainWindow):
         self.url_input.setPlaceholderText("e.g. google.com")
         self.url_input.returnPressed.connect(self.add_url)
         add_btn = QPushButton("Add")
+        add_btn.setFixedSize(QSize(50, 25))
         add_btn.clicked.connect(self.add_url)
         url_row.addWidget(self.url_input)
         url_row.addWidget(add_btn)
@@ -190,8 +194,10 @@ class GroupWindow(QMainWindow):
         action_row = QHBoxLayout()
         action_row.addStretch()
         self.cancel_btn = QPushButton("Cancel edit")
+        self.cancel_btn.setFixedSize(QSize(80, 30))
         self.cancel_btn.clicked.connect(self.reset_editor)
         self.save_btn = QPushButton("Create group")
+        self.save_btn.setFixedSize(QSize(80, 30))
         self.save_btn.clicked.connect(self.save_group)
         action_row.addWidget(self.cancel_btn)
         action_row.addWidget(self.save_btn)
@@ -283,6 +289,7 @@ class GroupWindow(QMainWindow):
         self.url_list.clear()
         self.status_label.clear()
         self.save_btn.setText("Create group")
+        self.save_btn.setStyleSheet(f"background-color: {OK_COLOR}; color: #000")
         self.cancel_btn.setVisible(False)
 
     # get all URLs in the list

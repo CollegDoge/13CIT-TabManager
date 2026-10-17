@@ -28,6 +28,11 @@ from pages.calendar_page import CalendarWindow
 from func.group import get_available_browsers, open_group
 from func import groupstore
 
+ACC_COLOR = "#213A73"   # nice blue color
+BORDER_COLOR = "#3A6BDB"   # nice blue color
+ERROR_COLOR = "#e06c75" # nice red color
+OK_COLOR = "#98c379"    # nice green color 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         # window defaults
@@ -39,8 +44,9 @@ class MainWindow(QMainWindow):
 
         # page layouts
         pagelayout = QVBoxLayout()
-        titlelayout = QHBoxLayout()
+        titlelayout = QVBoxLayout()
         grouplayout = QHBoxLayout()
+        groupaddlayout = QHBoxLayout()
         optionslayout = QVBoxLayout()
         calendarlayout = QVBoxLayout()
         bottombar = QHBoxLayout()
@@ -49,6 +55,7 @@ class MainWindow(QMainWindow):
         pagelayout.setSpacing(15)
         pagelayout.addLayout(titlelayout)
         pagelayout.addLayout(grouplayout)
+        pagelayout.addLayout(groupaddlayout)
         pagelayout.addLayout(optionslayout)
         pagelayout.addLayout(calendarlayout)
         pagelayout.addLayout(bottombar)
@@ -56,27 +63,35 @@ class MainWindow(QMainWindow):
 
         # page layout config
         titlelayout.setAlignment(Qt.AlignLeft)
+        titlelayout.setSpacing(0)
 
         grouplayout.setAlignment(Qt.AlignLeft)
         grouplayout.setSpacing(10)
-        grouplayout.setContentsMargins(10, 5, 0, 0)
+        grouplayout.setContentsMargins(15, 0, 0, 0)
+
+        groupaddlayout.setAlignment(Qt.AlignLeft)
+        groupaddlayout.setSpacing(10)
+        groupaddlayout.setContentsMargins(15, 5, 0, 10)
 
         optionslayout.setAlignment(Qt.AlignLeft)
         optionslayout.setSpacing(5)
-        optionslayout.setContentsMargins(10, 5, 0, 0)
+        optionslayout.setContentsMargins(15, 5, 0, 0)
 
         calendarlayout.setAlignment(Qt.AlignLeft)
         calendarlayout.setSpacing(10)
-        calendarlayout.setContentsMargins(10, 5, 0, 0)
+        calendarlayout.setContentsMargins(15, 5, 0, 0)
 
         bottombar.setAlignment(Qt.AlignRight)
         bottombar.setSpacing(10)
-        bottombar.setContentsMargins(10, 5, 0, 0)
 
         # title
         title_label = QLabel("<b>TabManager</b> - v0.1.0")
         title_label.setFont(QFont("Inter", 30))
         titlelayout.addWidget(title_label)
+
+        subtitle_label = QLabel("  Quick Launch")
+        subtitle_label.setFont(QFont("Inter", 15))
+        titlelayout.addWidget(subtitle_label)
 
         # button
         self.quicklayout = QGridLayout()
@@ -84,12 +99,19 @@ class MainWindow(QMainWindow):
         grouplayout.addLayout(self.quicklayout)
 
         groupadd = QPushButton("Add Tab Groups")
+        groupadd.setFixedSize(QSize(200, 30))
+        groupadd.setIcon(QIcon("assets/add.png"))
+        groupadd.setStyleSheet(f"background-color: {ACC_COLOR};")
         groupadd.clicked.connect(self.group_page)
-        grouplayout.addWidget(groupadd)
+        groupaddlayout.addWidget(groupadd)
 
         opt_browser_title = QLabel("Select Browser")
         self.opt_browser = QComboBox()
-        opt_browser_custom = QPushButton("Custom") # LATER
+        self.opt_browser.setFixedSize(QSize(200, 30))
+        
+        opt_browser_custom = QPushButton("")
+        opt_browser_custom.setFixedSize(QSize(30, 30))
+        opt_browser_custom.setIcon(QIcon("assets/folder.png"))
 
         available_browsers = get_available_browsers()
         for display_name, path in available_browsers:
@@ -101,16 +123,6 @@ class MainWindow(QMainWindow):
         opt1.addWidget(opt_browser_custom)
         opt1.setSpacing(20)
         optionslayout.addLayout(opt1)
-
-        # WILL DO LATER
-        opt_profile_title = QLabel("Select Profile")
-        opt_profile = QComboBox()
-
-        opt2 = QHBoxLayout()
-        opt2.addWidget(opt_profile_title)
-        opt2.addWidget(opt_profile)
-        opt2.setSpacing(20)
-        optionslayout.addLayout(opt2)
 
         opt_startup = QCheckBox("Start app with PC")
         opt_startup.setChecked(False)
@@ -129,10 +141,15 @@ class MainWindow(QMainWindow):
         optionslayout.addWidget(opt_destructive_warn)
 
         calendaradd = QPushButton("Manage Calendar")
+        calendaradd.setFixedSize(QSize(200, 30))
+        calendaradd.setIcon(QIcon("assets/calendar.png"))
+        calendaradd.setStyleSheet(f"background-color: {ACC_COLOR};")
         calendaradd.clicked.connect(self.calendar_page)
         calendarlayout.addWidget(calendaradd)
 
         quitbtn = QPushButton("Quit App")
+        quitbtn.setFixedSize(QSize(80, 30))
+        quitbtn.setStyleSheet(f"background-color: {ERROR_COLOR}; color: #000")
         quitbtn.clicked.connect(self.quit_app)
         bottombar.addWidget(quitbtn)
         
@@ -170,6 +187,8 @@ class MainWindow(QMainWindow):
                 w.deleteLater()
         for i, group in enumerate(groupstore.load_groups()):
             btn = QPushButton(group["name"])
+            btn.setFixedSize(QSize(180,90))
+            btn.setStyleSheet(f"border: 2px solid {BORDER_COLOR}; background-color: {ACC_COLOR}; font-size: 14px;")
             btn.clicked.connect(lambda checked=False, g=group: self.launch_group(g))
             self.quicklayout.addWidget(btn, i // 5, i % 5)  # max 5 per row
 
