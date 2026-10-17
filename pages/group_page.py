@@ -100,8 +100,10 @@ class GroupWindow(QMainWindow):
         # left/right split pefectly 50/50
         body = QHBoxLayout()
         body.setSpacing(20)
-        body.addLayout(self._build_group_list(), 1)
+        body.setContentsMargins(10, 0, 10, 0)
         body.addLayout(self._build_editor(), 1)
+        body.addLayout(self._build_group_list(), 1)
+
         pagelayout.addLayout(body, 1)
 
         # bottom bar
@@ -123,7 +125,7 @@ class GroupWindow(QMainWindow):
         self.refresh_cards()
         self.reset_editor()
 
-    # LEFT SIDE
+    # RIGHT SIDE
     def _build_group_list(self):
         curgrouplayout = QVBoxLayout()
 
@@ -142,7 +144,7 @@ class GroupWindow(QMainWindow):
         curgrouplayout.addWidget(scroll)
         return curgrouplayout
 
-    # RIGHT SIDE
+    # LEFT SIDE
     def _build_editor(self):
         newgrouplayout = QVBoxLayout()
         newgrouplayout.setSpacing(8)

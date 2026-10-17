@@ -1,5 +1,6 @@
 import sys
 import os
+import platform
 
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QIcon, QFont
@@ -18,6 +19,7 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QFileDialog,
+    QMessageBox,
     QTabWidget,
     QGridLayout
 )
@@ -25,7 +27,7 @@ from PyQt6.QtWidgets import (
 # pages
 from pages.group_page import GroupWindow
 from pages.calendar_page import CalendarWindow
-from func.group import get_available_browsers, open_group
+from func.group import get_available_browsers, open_group, add_custom_browser
 from func import groupstore
 
 ACC_COLOR = "#213A73"   # nice blue color
@@ -98,7 +100,7 @@ class MainWindow(QMainWindow):
         self.quicklayout.setSpacing(10)
         grouplayout.addLayout(self.quicklayout)
 
-        groupadd = QPushButton("Add Tab Groups")
+        groupadd = QPushButton("Add/Modify Tab Groups")
         groupadd.setFixedSize(QSize(200, 30))
         groupadd.setIcon(QIcon("assets/add.png"))
         groupadd.setStyleSheet(f"background-color: {ACC_COLOR};")
@@ -112,6 +114,7 @@ class MainWindow(QMainWindow):
         opt_browser_custom = QPushButton("")
         opt_browser_custom.setFixedSize(QSize(30, 30))
         opt_browser_custom.setIcon(QIcon("assets/folder.png"))
+        opt_browser_custom.clicked.connect(self.browse_browser)
 
         available_browsers = get_available_browsers()
         for display_name, path in available_browsers:
@@ -195,6 +198,36 @@ class MainWindow(QMainWindow):
     # launch a tab group
     def launch_group(self, group):
         open_group(group, self.opt_browser.currentData())
+
+    # add a custom browser
+    def browse_browser(self):
+        # platform dependent
+        if platform.system() == "Windows":
+            start_dir = os.environ.get("ProgramFiles", "C:/Program Files")
+            file_filter = "Executables (*.exe);;All files (*)"
+        else:
+            start_dir = "/usr/bin"
+            file_filter = "All files (*)"
+
+        path, _ = QFileDialog.getOpenFileName(
+            self, "Select browser executable", start_dir, file_filter
+        )
+
+        # error prevention
+        if not path:
+            return
+        try:
+            name, path = add_custom_browser(path)
+        except ValueError as e:
+            QMessageBox.warning(self, "Can't use that file", str(e))
+            return
+
+        # add to dropdown
+        index = self.opt_browser.findData(path)
+        if index == -1:
+            self.opt_browser.addItem(name, path)
+            index = self.opt_browser.count() - 1
+        self.opt_browser.setCurrentIndex(index)
 
     # quit the app
     def quit_app(self):

@@ -3,6 +3,8 @@ import sys
 import subprocess
 import platform
 
+from func.settings import load_settings, save_settings
+
 # nicer name for browser selection
 def get_browser_display_name(path):
     path_lower = path.lower()
@@ -71,6 +73,29 @@ def get_available_browsers():
                 
     # finally, return the list of actually available browsers
     return available
+
+def add_custom_browser(path):
+    path = os.path.abspath(path)  # also normalises the "/" the file dialog returns on Windows
+    if not os.path.isfile(path):
+        raise ValueError("That file doesn't exist.")
+    if platform.system() == "Windows":
+        if not path.lower().endswith(".exe"):
+            raise ValueError("Please choose an .exe file.")
+    elif not os.access(path, os.X_OK):
+        raise ValueError("That file isn't executable.")
+ 
+    # already in the list? reuse the existing entry instead of duplicating it
+    key = os.path.normcase(path)
+    for name, existing in get_available_browsers():
+        if os.path.normcase(os.path.abspath(existing)) == key:
+            return name, existing
+ 
+    settings = load_settings()
+    custom = settings.setdefault("custom_browsers", [])
+    custom.append(path)
+    save_settings(settings)
+    return get_browser_display_name(path), path
+
 
 def open_group(group, browser_path=None):
     # probably useless, but just in case
