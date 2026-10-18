@@ -1,3 +1,5 @@
-some of these are untested, and no list is comprehensive.
+JSON data will go here, assuming the app is not packaged.
 
-please submit a PR if you find a common browser that is not included, or a broken path.
+If pyinstaller is used, this will instead be placed in either:
+- Linux: ~/.config/TabManager
+- Windows: %APPDATA%\Roaming\TabManager

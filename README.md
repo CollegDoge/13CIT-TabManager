@@ -47,12 +47,12 @@ python main.py
 
 # 
 
-# TODO
+### TODO
 - everything done
 
-# optional (future development)
+### optional (future development)
 - colors for each tab group
 
 ### Assets
-https://icons8.com/
-https://www.flaticon.com/free-icons/
+- https://icons8.com/
+- https://www.flaticon.com/free-icons/

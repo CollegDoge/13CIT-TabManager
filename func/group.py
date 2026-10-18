@@ -41,7 +41,7 @@ def _common_path_file():
     name = names.get(platform.system())
     if name is None:
         return None
-    return os.path.join(os.path.dirname(__file__), "../data", name)
+    return os.path.join(os.path.dirname(__file__), "../ref", name)
 
 # check for browsers against predefined lists
 def get_available_browsers():
