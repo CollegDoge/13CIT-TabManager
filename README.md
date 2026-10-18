@@ -1,7 +1,7 @@
 # 13CIT TabManager
 
-## Pre compiled binaries
-should be in the releases tab assuming i remembered to do this... who knows
+## NOTE
+ran out of time to make a binary, so follow the instructions below to run the app
 
 > [!NOTE] 
 > I have used inter across this project, please install the font for correct rendering
