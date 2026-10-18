@@ -1,7 +1,7 @@
 import json
 import os
 import tempfile
- 
+
 # variables
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 SETTINGS_FILE = os.path.join(DATA_DIR, "settings.json")
@@ -16,7 +16,7 @@ def load_settings():
         return data if isinstance(data, dict) else {}
     except (json.JSONDecodeError, OSError):
         return {}
- 
+
 # save settings to disk with crash mitigations
 def save_settings(settings):
     os.makedirs(DATA_DIR, exist_ok=True)

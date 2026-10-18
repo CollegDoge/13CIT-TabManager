@@ -35,43 +35,38 @@ def get_browser_display_name(path):
         base = os.path.basename(path)
         return os.path.splitext(base)[0].replace("-", " ").title()
 
+# common path files for windows, linux
+def _common_path_file():
+    names = {"Windows": "commonpath-win.txt", "Linux": "commonpath-linux.txt"}
+    name = names.get(platform.system())
+    if name is None:
+        return None
+    return os.path.join(os.path.dirname(__file__), "../data", name)
+
 # check for browsers against predefined lists
 def get_available_browsers():
-    os_name = platform.system()
-    
-    if os_name == "Windows":
-        common_path_file = os.path.join(os.path.dirname(__file__), "../data/commonpath-win.txt")
-    elif os_name == "Linux":
-        common_path_file = os.path.join(os.path.dirname(__file__), "../data/commonpath-linux.txt")
-    elif os_name == "Darwin":
-        common_path_file = os.path.join(os.path.dirname(__file__), "../data/commonpath-mac.txt")
-    else:
-        return []
-
-    # if a path doesnt exist
-    if not os.path.exists(common_path_file):
-        return []
-
-    # build a list of (display_name, path) tuples (available browsers)
     available = []
     seen_paths = set()
-    
-    # read the file
-    with open(common_path_file, "r") as f:
-        for line in f:
-            raw_path = line.strip().strip('"')
-            if not raw_path:
-                continue
-                
-            expanded_path = os.path.expandvars(raw_path)
-            
-            # check if the path exists and is not already in the list
-            if os.path.exists(expanded_path) and expanded_path not in seen_paths:
-                seen_paths.add(expanded_path)
-                display_name = get_browser_display_name(expanded_path)
-                available.append((display_name, expanded_path))
-                
-    # finally, return the list of actually available browsers
+
+    def _add(path):
+        key = os.path.normcase(os.path.abspath(path))
+        if key in seen_paths or not os.path.exists(path):
+            return
+        seen_paths.add(key)
+        available.append((get_browser_display_name(path), path))
+
+    common_path_file = _common_path_file()
+    if common_path_file and os.path.exists(common_path_file):
+        with open(common_path_file, "r") as f:
+            for line in f:
+                raw_path = line.strip().strip('"')
+                if raw_path:
+                    _add(os.path.expandvars(raw_path))
+
+    # user-selected browsers (see add_custom_browser). Stale paths are skipped.
+    for path in load_settings().get("custom_browsers", []):
+        _add(path)
+
     return available
 
 def add_custom_browser(path):
@@ -83,19 +78,37 @@ def add_custom_browser(path):
             raise ValueError("Please choose an .exe file.")
     elif not os.access(path, os.X_OK):
         raise ValueError("That file isn't executable.")
- 
+
     # already in the list? reuse the existing entry instead of duplicating it
     key = os.path.normcase(path)
     for name, existing in get_available_browsers():
         if os.path.normcase(os.path.abspath(existing)) == key:
             return name, existing
- 
+
+    # add a browser to the list of available browsers + settings for persistence
     settings = load_settings()
     custom = settings.setdefault("custom_browsers", [])
     custom.append(path)
     save_settings(settings)
     return get_browser_display_name(path), path
 
+# firefox and its forks
+FIREFOX_BASED = ("firefox", "librewolf", "floorp", "waterfox")
+
+def is_firefox_based(browser_path):
+    names = {
+        os.path.basename(browser_path).lower(),
+        os.path.basename(os.path.realpath(browser_path)).lower(),
+    }
+    return any(f in n for n in names for f in FIREFOX_BASED)
+
+# launch args per browser platform
+def build_launch_args(browser_path, urls):
+    if is_firefox_based(browser_path):
+        if len(urls) == 1:
+            return ["-new-window", urls[0]]
+        return list(urls)
+    return ["--new-window"] + list(urls)
 
 def open_group(group, browser_path=None):
     # probably useless, but just in case
@@ -117,12 +130,11 @@ def open_group(group, browser_path=None):
 
     # should catch most problems, i didnt have any in testing
     try:
-        subprocess.Popen([browser] + urls)
-    except OSError as e: 
+        subprocess.Popen([browser] + build_launch_args(browser, urls))
+    except OSError as e:
         print("something died :( -", e)
         return False
     return True
-
 
 if __name__ == "__main__":
     grouptest()

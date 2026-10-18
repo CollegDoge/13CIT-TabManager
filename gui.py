@@ -3,7 +3,7 @@ import os
 import platform
 
 from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtGui import QIcon, QFont
+from PyQt6.QtGui import QIcon, QFont, QAction
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -21,14 +21,16 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QTabWidget,
-    QGridLayout
+    QGridLayout,
+    QSystemTrayIcon,
+    QMenu,
 )
 
 # pages
 from pages.group_page import GroupWindow
 from pages.calendar_page import CalendarWindow
 from func.group import get_available_browsers, open_group, add_custom_browser
-from func import groupstore
+from func import groupstore, startup
 
 ACC_COLOR = "#213A73"   # nice blue color
 BORDER_COLOR = "#3A6BDB"   # nice blue color
@@ -127,21 +129,18 @@ class MainWindow(QMainWindow):
         opt1.setSpacing(20)
         optionslayout.addLayout(opt1)
 
-        opt_startup = QCheckBox("Start app with PC")
-        opt_startup.setChecked(False)
-        optionslayout.addWidget(opt_startup)
+        self.opt_startup = QCheckBox("Start app with PC")
+        if startup.is_supported():
+            self.opt_startup.setChecked(startup.is_enabled())
+            self.opt_startup.clicked.connect(self.toggle_startup)
+        else:
+            self.opt_startup.setEnabled(False)
+            self.opt_startup.setToolTip("Only available on Windows")
+        optionslayout.addWidget(self.opt_startup)
 
-        opt_startup_warn = QLabel("Windows only, use alternative methods if using Linux/MacOS)")
+        opt_startup_warn = QLabel("Windows only, use alternative methods if using Linux")
         opt_startup_warn.setFont(QFont("Inter", 8))
         optionslayout.addWidget(opt_startup_warn)
-
-        opt_destructive = QCheckBox("Destructive Mode")
-        opt_destructive.setChecked(False)
-        optionslayout.addWidget(opt_destructive)
-
-        opt_destructive_warn = QLabel("Closes all other tabs on launch. Be careful.")
-        opt_destructive_warn.setFont(QFont("Inter", 8))
-        optionslayout.addWidget(opt_destructive_warn)
 
         calendaradd = QPushButton("Manage Calendar")
         calendaradd.setFixedSize(QSize(200, 30))
@@ -163,6 +162,7 @@ class MainWindow(QMainWindow):
         self.calendar_window = None
         self.group_window = None
         self.refresh_group_buttons()
+        self.setup_tray(icon_path)
 
     # open group page
     def group_page(self):
@@ -199,6 +199,73 @@ class MainWindow(QMainWindow):
     def launch_group(self, group):
         open_group(group, self.opt_browser.currentData())
 
+    # "start app with PC" checkbox (Windows only)
+    def toggle_startup(self, checked):
+        try:
+            if checked:
+                startup.enable()
+            else:
+                startup.disable()
+        except OSError as e:
+            self.opt_startup.setChecked(not checked)  # revert
+            QMessageBox.warning(self, "something got cooked.. sorry", str(e))
+
+    # tray icon: lets the app keep running (and start hidden) in the background
+    def setup_tray(self, icon_path):
+        self.tray = None
+        self.really_quit = False
+        self.tray_hint_shown = False
+        if not QSystemTrayIcon.isSystemTrayAvailable():
+            return
+
+        self.tray = QSystemTrayIcon(QIcon(icon_path), self)
+        self.tray.setToolTip("TabManager")
+
+        menu = QMenu(self)
+        open_action = QAction("Open TabManager", menu)
+        open_action.triggered.connect(self.show_main)
+        quit_action = QAction("Quit", menu)
+        quit_action.triggered.connect(self.quit_app)
+        menu.addAction(open_action)
+        menu.addAction(quit_action)
+        self.tray.setContextMenu(menu)
+        self.tray.activated.connect(self.on_tray_activated)
+        self.tray.show()
+
+        # closing windows should leave the app running in the tray
+        QApplication.setQuitOnLastWindowClosed(False)
+
+    def on_tray_activated(self, reason):
+        if reason == QSystemTrayIcon.ActivationReason.Trigger:  # left click
+            self.show_main()
+
+    def show_main(self):
+        # if a sub-page is open, bring that forward instead of stacking windows
+        for w in (self.group_window, self.calendar_window):
+            if w is not None and w.isVisible():
+                w.raise_()
+                w.activateWindow()
+                return
+        self.show()
+        self.raise_()
+        self.activateWindow()
+
+    # the X button hides to tray instead of quitting (if a tray exists)
+    def closeEvent(self, event):
+        if self.tray is not None and not self.really_quit:
+            event.ignore()
+            self.hide()
+            if not self.tray_hint_shown:
+                self.tray_hint_shown = True
+                self.tray.showMessage(
+                    "TabManager",
+                    "Still running in the system tray. Right-click the icon to quit.",
+                    QSystemTrayIcon.MessageIcon.Information,
+                    4000,
+                )
+        else:
+            event.accept()
+
     # add a custom browser
     def browse_browser(self):
         # platform dependent
@@ -232,4 +299,5 @@ class MainWindow(QMainWindow):
     # quit the app
     def quit_app(self):
         print("App Closed.")
-        self.close()
+        self.really_quit = True
+        QApplication.quit()
