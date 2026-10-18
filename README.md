@@ -48,20 +48,10 @@ python main.py
 # 
 
 # TODO
-- ✅ detect path (platform dependent (e.g /usr/bin/firefox, C:\Program Files (x86)\Google\Chrome\Application\chrome.exe))
-- ✅ get basic tab execution/groups done
-- ✅ allow users to select browser from dropdown
-- ✅ tab group creation GUI
-- ✅ custom lists n stuff
-- other toggles (startup, destructive mode, etc)
-- file picker
-- colors per tab group
+- everything done
 
-
-# LATER
-- calendar LATER - work on tab groups first. ICS stuff hold for now
-- everything else
-
+# optional (future development)
+- colors for each tab group
 
 ### Assets
 https://icons8.com/
