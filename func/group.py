@@ -5,7 +5,7 @@ import platform
 
 from func.settings import load_settings, save_settings
 
-# nicer name for browser selection
+# nicer name for browser selection list (used in the dropdown)
 def get_browser_display_name(path):
     path_lower = path.lower()
     if "brave" in path_lower:

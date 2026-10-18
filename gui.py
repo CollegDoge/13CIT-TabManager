@@ -31,9 +31,11 @@ from pages.group_page import GroupWindow
 from pages.calendar_page import CalendarWindow
 from func.group import get_available_browsers, open_group, add_custom_browser
 from func import groupstore, startup
+from func.scheduler import Scheduler
+from func.settings import get_setting, set_setting
 
 ACC_COLOR = "#213A73"   # nice blue color
-BORDER_COLOR = "#3A6BDB"   # nice blue color
+BORDER_COLOR = "#3A6BDB"# nice blue color
 ERROR_COLOR = "#e06c75" # nice red color
 OK_COLOR = "#98c379"    # nice green color 
 
@@ -52,18 +54,15 @@ class MainWindow(QMainWindow):
         grouplayout = QHBoxLayout()
         groupaddlayout = QHBoxLayout()
         optionslayout = QVBoxLayout()
-        calendarlayout = QVBoxLayout()
         bottombar = QHBoxLayout()
-        self.stacklayout = QStackedLayout()
 
         pagelayout.setSpacing(15)
         pagelayout.addLayout(titlelayout)
         pagelayout.addLayout(grouplayout)
         pagelayout.addLayout(groupaddlayout)
         pagelayout.addLayout(optionslayout)
-        pagelayout.addLayout(calendarlayout)
+        pagelayout.addStretch()  # pushes the bottom bar to the bottom of the window
         pagelayout.addLayout(bottombar)
-        pagelayout.addLayout(self.stacklayout)
 
         # page layout config
         titlelayout.setAlignment(Qt.AlignLeft)
@@ -81,11 +80,7 @@ class MainWindow(QMainWindow):
         optionslayout.setSpacing(5)
         optionslayout.setContentsMargins(15, 5, 0, 0)
 
-        calendarlayout.setAlignment(Qt.AlignLeft)
-        calendarlayout.setSpacing(10)
-        calendarlayout.setContentsMargins(15, 5, 0, 0)
-
-        bottombar.setAlignment(Qt.AlignRight)
+        bottombar.setContentsMargins(15, 0, 20, 15)
         bottombar.setSpacing(10)
 
         # title
@@ -97,7 +92,7 @@ class MainWindow(QMainWindow):
         subtitle_label.setFont(QFont("Inter", 15))
         titlelayout.addWidget(subtitle_label)
 
-        # button
+        # buttons/items
         self.quicklayout = QGridLayout()
         self.quicklayout.setSpacing(10)
         grouplayout.addLayout(self.quicklayout)
@@ -122,6 +117,12 @@ class MainWindow(QMainWindow):
         for display_name, path in available_browsers:
             self.opt_browser.addItem(display_name, path)
 
+        # remember the chosen browser
+        saved = self.opt_browser.findData(get_setting("selected_browser"))
+        if saved != -1:
+            self.opt_browser.setCurrentIndex(saved)
+        self.opt_browser.currentIndexChanged.connect(self.save_browser_choice)
+
         opt1 = QHBoxLayout()
         opt1.addWidget(opt_browser_title)
         opt1.addWidget(self.opt_browser)
@@ -138,21 +139,24 @@ class MainWindow(QMainWindow):
             self.opt_startup.setToolTip("Only available on Windows")
         optionslayout.addWidget(self.opt_startup)
 
-        opt_startup_warn = QLabel("Windows only, use alternative methods if using Linux")
+        opt_startup_warn = QLabel("Windows only, use alternative methods if using Linux/MacOS)")
         opt_startup_warn.setFont(QFont("Inter", 8))
         optionslayout.addWidget(opt_startup_warn)
 
+        # bottom left
         calendaradd = QPushButton("Manage Calendar")
         calendaradd.setFixedSize(QSize(200, 30))
         calendaradd.setIcon(QIcon("assets/calendar.png"))
         calendaradd.setStyleSheet(f"background-color: {ACC_COLOR};")
         calendaradd.clicked.connect(self.calendar_page)
-        calendarlayout.addWidget(calendaradd)
+        bottombar.addWidget(calendaradd) 
 
+        # bottom right
         quitbtn = QPushButton("Quit App")
         quitbtn.setFixedSize(QSize(80, 30))
         quitbtn.setStyleSheet(f"background-color: {ERROR_COLOR}; color: #000")
         quitbtn.clicked.connect(self.quit_app)
+        bottombar.addStretch()
         bottombar.addWidget(quitbtn)
         
         widget = QWidget()
@@ -163,6 +167,14 @@ class MainWindow(QMainWindow):
         self.group_window = None
         self.refresh_group_buttons()
         self.setup_tray(icon_path)
+
+        # background scheduler
+        self.scheduler = Scheduler(
+            open_group_cb=lambda g: open_group(g, self.opt_browser.currentData()),
+            tray_getter=lambda: self.tray,
+            parent=self,
+        )
+        self.scheduler.start()
 
     # open group page
     def group_page(self):
@@ -178,6 +190,7 @@ class MainWindow(QMainWindow):
         if self.calendar_window is None:
             self.calendar_window = CalendarWindow()
             self.calendar_window.back_to_main_signal.connect(self.show)
+            self.calendar_window.schedule_changed.connect(self.scheduler.reload)
         self.calendar_window.show()
         self.hide()
     
@@ -197,7 +210,13 @@ class MainWindow(QMainWindow):
 
     # launch a tab group
     def launch_group(self, group):
-        open_group(group, self.opt_browser.currentData())
+        if open_group(group, self.opt_browser.currentData()):
+            self.scheduler.record_open(group["id"])  # so it isn't re-opened later as "missed"
+
+    def save_browser_choice(self):
+        path = self.opt_browser.currentData()
+        if path:
+            set_setting("selected_browser", path)
 
     # "start app with PC" checkbox (Windows only)
     def toggle_startup(self, checked):
@@ -208,7 +227,7 @@ class MainWindow(QMainWindow):
                 startup.disable()
         except OSError as e:
             self.opt_startup.setChecked(not checked)  # revert
-            QMessageBox.warning(self, "something got cooked.. sorry", str(e))
+            QMessageBox.warning(self, "Couldn't change startup setting", str(e))
 
     # tray icon: lets the app keep running (and start hidden) in the background
     def setup_tray(self, icon_path):
